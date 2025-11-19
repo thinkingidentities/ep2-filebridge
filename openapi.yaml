@@ -1,0 +1,388 @@
+openapi: 3.1.0
+info:
+  title: EP2 FileBridge API
+  description: |
+    Cross-substrate file operations for the TW cognitive federation.
+    Enables read/write access to DGX filesystem via Cloudflare tunnel.
+
+    Root directory: /home/jim00/ep2
+  version: 1.0.0
+  contact:
+    name: TW Federation
+    url: https://cognates.hippocamp.ai
+
+servers:
+  - url: https://cognates.hippocamp.ai/filebridge
+    description: Production - Cloudflare Tunnel to DGX
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Check service health
+      description: Returns service status and root directory configuration
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: EP2-FileBridge
+                  root:
+                    type: string
+                    example: /home/jim00/ep2
+
+  /read_file:
+    post:
+      operationId: readFile
+      summary: Read file contents
+      description: Read a file from the DGX filesystem. Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Relative path to file
+                  example: packages/gabe/identity.md
+      responses:
+        '200':
+          description: File contents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  content:
+                    type: string
+        '500':
+          description: Error reading file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /write_file:
+    post:
+      operationId: writeFile
+      summary: Write file contents
+      description: Write content to a file. Creates directories if needed. Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+                - content
+              properties:
+                path:
+                  type: string
+                  description: Relative path to file
+                  example: packages/gabe/output.md
+                content:
+                  type: string
+                  description: File content to write
+      responses:
+        '200':
+          description: File written
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  path:
+                    type: string
+        '500':
+          description: Error writing file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /append_file:
+    post:
+      operationId: appendFile
+      summary: Append to file
+      description: Append content to an existing file. Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+                - content
+              properties:
+                path:
+                  type: string
+                  description: Relative path to file
+                content:
+                  type: string
+                  description: Content to append
+      responses:
+        '200':
+          description: Content appended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  path:
+                    type: string
+        '500':
+          description: Error appending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /list_files:
+    post:
+      operationId: listFiles
+      summary: List directory contents
+      description: List files and directories at a path. Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Relative path to directory
+                  example: packages/gabe
+      responses:
+        '200':
+          description: Directory listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isDirectory:
+                          type: boolean
+        '500':
+          description: Error listing directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /delete_file:
+    post:
+      operationId: deleteFile
+      summary: Delete a file
+      description: Delete a file from the filesystem. Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Relative path to file to delete
+      responses:
+        '200':
+          description: File deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  path:
+                    type: string
+        '500':
+          description: Error deleting file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mkdir:
+    post:
+      operationId: makeDirectory
+      summary: Create directory
+      description: Create a directory (and parent directories if needed). Path is relative to root.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Relative path for new directory
+      responses:
+        '200':
+          description: Directory created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  path:
+                    type: string
+        '500':
+          description: Error creating directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /git_status:
+    post:
+      operationId: gitStatus
+      summary: Get git status
+      description: Get the current git status of the repository
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Git status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  git_status:
+                    type: object
+        '500':
+          description: Error getting status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /git_commit:
+    post:
+      operationId: gitCommit
+      summary: Commit changes
+      description: Stage all changes and commit with a message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  description: Commit message
+      responses:
+        '200':
+          description: Commit created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  commit:
+                    type: object
+        '500':
+          description: Error committing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /hash_file:
+    post:
+      operationId: hashFile
+      summary: Get file hash
+      description: Calculate SHA-256 hash of a file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: Relative path to file
+      responses:
+        '200':
+          description: File hash
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  hash:
+                    type: string
+        '500':
+          description: Error hashing file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        error:
+          type: string
+          description: Error message

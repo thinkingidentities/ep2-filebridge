@@ -108,5 +108,30 @@ app.get("/health", (req, res) => res.json({
   root: FILEBRIDGE_ROOT
 }));
 
+// Serve OpenAPI spec for ChatGPT Custom GPT Actions
+app.get("/openapi.yaml", async (req, res) => {
+  try {
+    const specPath = path.join(path.dirname(new URL(import.meta.url).pathname), "openapi.yaml");
+    const spec = await fs.promises.readFile(specPath, "utf8");
+    res.type("text/yaml").send(spec);
+  } catch (e) {
+    res.status(500).json({ status: "error", error: e.message });
+  }
+});
+
+// Also serve as JSON for convenience
+app.get("/openapi.json", async (req, res) => {
+  try {
+    const specPath = path.join(path.dirname(new URL(import.meta.url).pathname), "openapi.yaml");
+    const yaml = await fs.promises.readFile(specPath, "utf8");
+    // Simple YAML to JSON (works for this spec)
+    const { parse } = await import("yaml");
+    const json = parse(yaml);
+    res.json(json);
+  } catch (e) {
+    res.status(500).json({ status: "error", error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3100;
 app.listen(PORT, () => console.log(`EP2-FileBridge HTTP server on port ${PORT} (root: ${FILEBRIDGE_ROOT})`));
