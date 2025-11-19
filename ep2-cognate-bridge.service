@@ -1,0 +1,18 @@
+[Unit]
+Description=Cognate Bridge MCP-SSE Server
+After=network.target ep2-filebridge-http.service
+Requires=ep2-filebridge-http.service
+
+[Service]
+Type=simple
+User=jim00
+WorkingDirectory=/home/jim00/ep2/mcp/filebridge
+ExecStart=/usr/bin/node /home/jim00/ep2/mcp/filebridge/mcp-sse-server.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=FILEBRIDGE_URL=http://localhost:3100
+Environment=MCP_PORT=3101
+
+[Install]
+WantedBy=multi-user.target
