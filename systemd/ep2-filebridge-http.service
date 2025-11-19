@@ -1,0 +1,18 @@
+[Unit]
+Description=EP2 FileBridge HTTP Server
+After=network.target
+
+[Service]
+Type=simple
+User=jim00
+WorkingDirectory=/home/jim00/ep2-filebridge
+ExecStart=/usr/bin/node /home/jim00/ep2-filebridge/http-server.js
+Restart=on-failure
+RestartSec=5
+Environment=PORT=3100
+Environment=FILEBRIDGE_ROOT=/home/jim00/ep2
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

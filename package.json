@@ -1,0 +1,25 @@
+{
+  "name": "ep2-filebridge",
+  "version": "1.0.0",
+  "description": "Cross-substrate file operations MCP server for EP2 repository",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:http": "node http-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "filebridge",
+    "ep2",
+    "cross-substrate"
+  ],
+  "author": "thinkingidentities",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^5.0.0",
+    "simple-git": "^3.22.0"
+  }
+}
